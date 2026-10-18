@@ -18,6 +18,11 @@ export type PlaytestAppearance = {
 }
 
 export type DeckPlaytesterProps = PlaytestAppearance & {
+  /**
+   * Offer "Restart game" (and "Restart" on the opening hand). Defaults to true; turn it off where a
+   * restart would throw away a game others are watching, such as at a shared table.
+   */
+  canRestart?: boolean
   /** Rendered at the start of the top bar, e.g. a back link or a close button. */
   closeSlot?: ReactNode
   /** The deal a new game starts from; restarting reshuffles it. */

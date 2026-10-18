@@ -81,3 +81,13 @@ test("hidden host values remove their controls", () => {
   expect(screen.queryByRole("group", { name: "Life total" })).toBeNull()
   expect(screen.queryByRole("button", { name: /Next turn/ })).toBeNull()
 })
+
+test("canRestart={false} offers no way to restart the game", () => {
+  render(<DeckPlaytester canRestart={false} initialState={initialState} title="Test deck" />)
+  expect(screen.getByRole("heading", { name: "Opening hand" })).toBeTruthy()
+  expect(screen.queryByRole("button", { name: /Restart/ })).toBeNull()
+  fireEvent.click(screen.getByRole("button", { name: /Keep 7/ }))
+  expect(screen.queryByRole("button", { name: "Restart game" })).toBeNull()
+  fireEvent.click(screen.getByRole("button", { name: "More game actions" }))
+  expect(screen.queryByRole("menuitem", { name: /Restart/ })).toBeNull()
+})

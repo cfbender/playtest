@@ -82,7 +82,8 @@ export function PlaytestTopBar({
   onFlipCoin: () => void
   onLifeChange: (delta: number) => void
   onNextTurn: () => void
-  onRestart: () => void
+  /** Null hides Restart game. */
+  onRestart: (() => void) | null
   onRollDie: (sides: number) => void
   onSettingsChange: (patch: Partial<PlaytestSettings>) => void
   onShortcutsOpenChange: (open: boolean) => void
@@ -187,15 +188,17 @@ export function PlaytestTopBar({
       </button>
 
       <div className="hidden items-center gap-1 md:flex">
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm btn-square"
-          onClick={onRestart}
-          aria-label="Restart game"
-          title="Restart game"
-        >
-          <RotateCw className="h-4 w-4" />
-        </button>
+        {onRestart ? (
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm btn-square"
+            onClick={onRestart}
+            aria-label="Restart game"
+            title="Restart game"
+          >
+            <RotateCw className="h-4 w-4" />
+          </button>
+        ) : null}
         <Popover>
           <PopoverTrigger asChild>
             <button
@@ -294,11 +297,15 @@ export function PlaytestTopBar({
                 {label}
               </DropdownMenuItem>
             ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onRestart}>
-              <RotateCw className="h-4 w-4" />
-              Restart game
-            </DropdownMenuItem>
+            {onRestart ? (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={onRestart}>
+                  <RotateCw className="h-4 w-4" />
+                  Restart game
+                </DropdownMenuItem>
+              </>
+            ) : null}
           </div>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -33,7 +33,8 @@ export function OpeningHandOverlay({
   onCardLeave: (cardId: string) => void
   onKeep: () => void
   onMulligan: () => void
-  onNewHand: () => void
+  /** Null hides Restart. */
+  onNewHand: (() => void) | null
 }) {
   const landCount = hand.filter(isLandCard).length
   const nextHandSize = Math.max(hand.length - (mulligans === 0 ? 0 : 1), 0)
@@ -82,15 +83,17 @@ export function OpeningHandOverlay({
         </ol>
 
         <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:flex sm:items-center sm:justify-end">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onNewHand}
-            className="order-last col-span-2 sm:order-none sm:mr-auto"
-          >
-            <RotateCw className="h-4 w-4" />
-            Restart
-          </Button>
+          {onNewHand ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onNewHand}
+              className="order-last col-span-2 sm:order-none sm:mr-auto"
+            >
+              <RotateCw className="h-4 w-4" />
+              Restart
+            </Button>
+          ) : null}
           <Button type="button" variant="outline" onClick={onMulligan}>
             Mulligan
             <kbd className="kbd kbd-xs hidden sm:inline-flex">M</kbd>

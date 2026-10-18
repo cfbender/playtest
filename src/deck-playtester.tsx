@@ -51,6 +51,7 @@ type BattlefieldPointerDrag = {
 }
 
 export function DeckPlaytester({
+  canRestart = true,
   closeSlot,
   initialState,
   life,
@@ -438,7 +439,7 @@ export function DeckPlaytester({
             onFlipCoin={playtest.flipCoin}
             onLifeChange={playtest.changeLife}
             onNextTurn={playtest.nextTurn}
-            onRestart={playtest.resetGame}
+            onRestart={canRestart ? playtest.resetGame : null}
             onRollDie={playtest.rollDie}
             onShortcutsOpenChange={setShortcutsOpen}
             onUndo={playtest.undo}
@@ -524,7 +525,7 @@ export function DeckPlaytester({
                 onCardLeave={clearCardHovered}
                 onKeep={playtest.keepHand}
                 onMulligan={playtest.mulligan}
-                onNewHand={playtest.resetGame}
+                onNewHand={canRestart ? playtest.resetGame : null}
               />
             ) : null}
             {playtest.tokenDialogOpen ? (

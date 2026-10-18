@@ -71,6 +71,7 @@ Fill the playtester's container (`h-full`): it lays out its own top bar, battlef
 | -------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | `title`, `initialState`          | Required. `initialState` is the deal a new game starts from; restarting reshuffles it.                    |
 | `closeSlot`                      | Rendered at the start of the top bar (a back link or close button).                                       |
+| `canRestart`                     | Offer Restart game and the opening hand's Restart (default `true`). Turn it off at a shared table.        |
 | `tokenOptions`                   | Tokens this deck makes, offered first in the token dialog.                                                |
 | `sleeveImageUrl`                 | Logo on card backs. Omit for a plain sleeve.                                                              |
 | `manaSymbolUrl(symbol)`          | Image URL for a mana symbol, named like Scryfall's files (`{2/W}` is `2W`). Omit to hide hand mana costs. |
