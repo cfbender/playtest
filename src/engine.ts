@@ -155,8 +155,19 @@ export function movePlaytestCard(
   }
 }
 
-export function mulliganPlaytest(state: PlaytestState, random: () => number = Math.random) {
-  const nextHandSize = Math.max(state.handSize - (state.mulligans === 0 ? 0 : 1), 0)
+/**
+ * Shuffles everything back and deals a new hand. The first mulligan is free. After that, each one
+ * draws a card fewer, or under the London mulligan (`london: true`) draws a full hand again and
+ * the player puts `londonBottomCount(mulligans)` cards on the bottom when keeping.
+ */
+export function mulliganPlaytest(
+  state: PlaytestState,
+  random: () => number = Math.random,
+  { london = false }: { london?: boolean } = {},
+) {
+  const nextHandSize = london
+    ? state.handSize
+    : Math.max(state.handSize - (state.mulligans === 0 ? 0 : 1), 0)
   const libraryPool = [
     ...state.library,
     ...state.hand,
@@ -170,6 +181,11 @@ export function mulliganPlaytest(state: PlaytestState, random: () => number = Ma
     mulligans: state.mulligans + 1,
     random,
   })
+}
+
+/** Cards a London mulligan puts on the bottom of the library after `mulligans` (the first is free). */
+export function londonBottomCount(mulligans: number) {
+  return Math.max(mulligans - 1, 0)
 }
 
 export function shuffleLibrary(

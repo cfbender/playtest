@@ -10,6 +10,7 @@ import {
 import {
   drawCards,
   exileFromLibrary,
+  londonBottomCount,
   millCards,
   moveAllPlaytestCards,
   movePlaytestCard,
@@ -67,6 +68,7 @@ export type PlaytesterStateOptions = {
   drawOnNextTurn?: boolean
   initialState: PlaytestState
   life?: HostValue<number> | null
+  londonMulligan?: boolean
   onSnapshotChange?: (snapshot: PlaytestSnapshot) => void
   playerCounters?: HostValue<PlayerCounters> | null
   saveKey?: string
@@ -79,6 +81,7 @@ export function usePlaytesterState({
   drawOnNextTurn = true,
   initialState,
   life,
+  londonMulligan = false,
   onSnapshotChange,
   playerCounters: hostPlayerCounters,
   saveKey,
@@ -230,9 +233,48 @@ export function usePlaytesterState({
     setActionLog(["Started a new game"])
   }, [initialState, replaceSnapshot])
 
+  // Cards picked for the bottom of a London mulligan, tied to the hand they were picked from so a
+  // new hand (a mulligan, undo, or restart) starts with none picked.
+  const handKey = `${state.mulligans}:${state.hand.map((card) => card.id).join()}`
+  const [bottomPick, setBottomPick] = useState({ cardIds: [] as string[], handKey })
+  const bottomCardIds = bottomPick.handKey === handKey ? bottomPick.cardIds : []
+  const bottomCount =
+    londonMulligan && openingHand
+      ? Math.min(londonBottomCount(state.mulligans), state.hand.length)
+      : 0
+
+  const toggleBottomCard = useCallback(
+    (cardId: string) => {
+      setBottomPick((current) => {
+        const picked = current.handKey === handKey ? current.cardIds : []
+        return {
+          cardIds: picked.includes(cardId)
+            ? picked.filter((id) => id !== cardId)
+            : [...picked, cardId],
+          handKey,
+        }
+      })
+    },
+    [handKey],
+  )
+
+  /** Keeps the opening hand; a London mulligan first needs its cards picked for the bottom. */
   const keepHand = useCallback(() => {
-    commit((current) => ({ ...current, openingHand: false }), "Kept opening hand")
-  }, [commit])
+    if (bottomCardIds.length !== bottomCount) return
+    commit(
+      (current) => ({
+        ...current,
+        openingHand: false,
+        state: bottomCardIds.reduce(
+          (next, cardId) => movePlaytestCard(next, "hand", "library", cardId, "bottom"),
+          current.state,
+        ),
+      }),
+      bottomCount
+        ? `Kept ${state.hand.length - bottomCount}, put ${bottomCount} on the bottom`
+        : "Kept opening hand",
+    )
+  }, [bottomCardIds, bottomCount, commit, state.hand.length])
 
   const changeLife = useCallback(
     (delta: number) => {
@@ -310,12 +352,12 @@ export function usePlaytesterState({
         battlefieldCardPositions: {},
         openingHand: true,
         cardStatuses: {},
-        state: mulliganPlaytest(current.state),
+        state: mulliganPlaytest(current.state, Math.random, { london: londonMulligan }),
         tappedCardIds: [],
       }),
       "Took a mulligan",
     )
-  }, [commit])
+  }, [commit, londonMulligan])
 
   const markCardHovered = useCallback((cardId: string, zone: PlaytestZone) => {
     setHoveredCard({ cardId, zone })
@@ -670,6 +712,8 @@ export function usePlaytesterState({
     adjustCounter,
     adjustPlayerCounter,
     battlefieldCardPositions,
+    bottomCardIds,
+    bottomCount,
     cardStatuses,
     changeLife,
     clearCardHovered,
@@ -726,6 +770,7 @@ export function usePlaytesterState({
     shuffle,
     state,
     tappedCards,
+    toggleBottomCard,
     toggleCardSelection,
     toggleFaceDown,
     toggleTapped,

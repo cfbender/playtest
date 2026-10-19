@@ -1,6 +1,6 @@
 {
   "name": "@cfbender/playtest",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "A Magic: The Gathering deck playtester and read-only spectator board for React, styled with Tailwind and daisyUI.",
   "license": "MPL-2.0",

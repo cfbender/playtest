@@ -39,6 +39,11 @@ const SETTING_LABELS: Array<{ key: keyof PlaytestSettings; label: string; hint: 
     label: "Draw on next turn",
   },
   {
+    hint: "Redraw a full hand each time. When you keep, put one card on the bottom per mulligan after the free first.",
+    key: "londonMulligan",
+    label: "London mulligan",
+  },
+  {
     hint: "Show a large copy of the card under your pointer.",
     key: "showHoverPreview",
     label: "Card preview on hover",

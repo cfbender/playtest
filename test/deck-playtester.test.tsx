@@ -91,3 +91,39 @@ test("canRestart={false} offers no way to restart the game", () => {
   fireEvent.click(screen.getByRole("button", { name: "More game actions" }))
   expect(screen.queryByRole("menuitem", { name: /Restart/ })).toBeNull()
 })
+
+test("a London mulligan puts the picked cards on the bottom when keeping", () => {
+  window.localStorage.setItem("test:settings", JSON.stringify({ londonMulligan: true }))
+  const onSnapshotChange = vi.fn<(snapshot: PlaytestSnapshot) => void>()
+  render(
+    <DeckPlaytester
+      initialState={initialState}
+      onSnapshotChange={onSnapshotChange}
+      settingsKey="test:settings"
+      title="Test deck"
+    />,
+  )
+
+  // The first mulligan is free; the second redraws 7 and owes one card to the bottom.
+  fireEvent.click(screen.getByRole("button", { name: /Mulligan/ }))
+  expect(screen.getByRole("button", { name: /Keep 7/ })).toBeTruthy()
+  fireEvent.click(screen.getByRole("button", { name: /Mulligan/ }))
+  const keep = screen.getByRole("button", { name: /Keep 6/ }) as HTMLButtonElement
+  expect(keep.disabled).toBe(true)
+  fireEvent.keyDown(window, { key: "Enter" })
+  expect(screen.getByRole("heading", { name: "Opening hand" })).toBeTruthy()
+
+  const dealt = onSnapshotChange.mock.lastCall![0].state
+  expect(dealt.hand).toHaveLength(7)
+  const bottom = dealt.hand[2]
+  fireEvent.click(screen.getByRole("button", { name: `Put ${bottom.name} on the bottom` }))
+  fireEvent.click(keep)
+
+  const kept = onSnapshotChange.mock.lastCall![0]
+  expect(kept.openingHand).toBe(false)
+  expect(kept.state.hand.map((card) => card.id)).toEqual(
+    dealt.hand.filter((card) => card.id !== bottom.id).map((card) => card.id),
+  )
+  expect(kept.state.library.at(-1)?.id).toBe(bottom.id)
+  window.localStorage.removeItem("test:settings")
+})

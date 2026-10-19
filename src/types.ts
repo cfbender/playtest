@@ -58,6 +58,7 @@ export type DeckPlaytesterProps = PlaytestAppearance & {
 
 export type PlaytestSettings = {
   drawOnNextTurn: boolean
+  londonMulligan: boolean
   showHoverPreview: boolean
 }
 

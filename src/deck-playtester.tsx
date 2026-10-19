@@ -71,6 +71,7 @@ export function DeckPlaytester({
     drawOnNextTurn: settings.drawOnNextTurn,
     initialState,
     life,
+    londonMulligan: settings.londonMulligan,
     onSnapshotChange,
     playerCounters,
     saveKey,
@@ -519,8 +520,13 @@ export function DeckPlaytester({
             ) : null}
             {openingHand ? (
               <OpeningHandOverlay
+                bottomCardIds={playtest.bottomCardIds}
+                bottomCount={playtest.bottomCount}
                 hand={state.hand}
+                handSize={state.handSize}
+                londonMulligan={settings.londonMulligan}
                 mulligans={state.mulligans}
+                onToggleBottomCard={playtest.toggleBottomCard}
                 onCardHover={playtest.markCardHovered}
                 onCardLeave={clearCardHovered}
                 onKeep={playtest.keepHand}

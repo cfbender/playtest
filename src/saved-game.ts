@@ -4,7 +4,11 @@ import type { PlaytestSettings, PlaytestSnapshot } from "./types"
 const GAME_VERSION = 1
 const ZONES = ["battlefield", "command", "exile", "graveyard", "hand", "library"] as const
 
-export const DEFAULT_SETTINGS: PlaytestSettings = { drawOnNextTurn: true, showHoverPreview: true }
+export const DEFAULT_SETTINGS: PlaytestSettings = {
+  drawOnNextTurn: true,
+  londonMulligan: false,
+  showHoverPreview: true,
+}
 
 function deckCardIds(cards: PlaytestCard[]) {
   return cards

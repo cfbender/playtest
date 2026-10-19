@@ -72,6 +72,16 @@ test("mulligan keeps the first multiplayer mulligan free then subtracts cards", 
   expect(state.hand.length).toBe(6)
 })
 
+test("London mulligans redraw a full hand", () => {
+  let state = createPlaytestState(cards, command, { random: steadyRandom })
+  state = mulliganPlaytest(state, steadyRandom, { london: true })
+  state = mulliganPlaytest(state, steadyRandom, { london: true })
+
+  expect(state.mulligans).toBe(2)
+  expect(state.hand.length).toBe(7)
+  expect(state.hand.length + state.library.length).toBe(10)
+})
+
 test("shuffleCards returns a new array without mutating input", () => {
   const original = cards.slice(0, 3)
   const shuffled = shuffleCards(original, steadyRandom)

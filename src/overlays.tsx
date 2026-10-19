@@ -19,15 +19,27 @@ import { CardThumb } from "./card-thumb"
 import type { PeekMode, TokenFormValues } from "./types"
 
 export function OpeningHandOverlay({
+  bottomCardIds,
+  bottomCount,
   hand,
+  handSize,
+  londonMulligan,
   mulligans,
   onCardHover,
   onCardLeave,
   onKeep,
   onMulligan,
   onNewHand,
+  onToggleBottomCard,
 }: {
+  /** Cards picked for the bottom, in the order they go there. */
+  bottomCardIds: string[]
+  /** How many cards the London mulligan puts on the bottom before keeping. */
+  bottomCount: number
   hand: PlaytestCard[]
+  /** Cards a full hand draws. */
+  handSize: number
+  londonMulligan: boolean
   mulligans: number
   onCardHover: (cardId: string, zone: PlaytestZone) => void
   onCardLeave: (cardId: string) => void
@@ -35,9 +47,12 @@ export function OpeningHandOverlay({
   onMulligan: () => void
   /** Null hides Restart. */
   onNewHand: (() => void) | null
+  onToggleBottomCard: (cardId: string) => void
 }) {
   const landCount = hand.filter(isLandCard).length
   const nextHandSize = Math.max(hand.length - (mulligans === 0 ? 0 : 1), 0)
+  const choosingBottom = bottomCount > 0
+  const readyToKeep = bottomCardIds.length === bottomCount
 
   return (
     <div className="absolute inset-0 z-30 flex overflow-y-auto bg-black/55 p-3 sm:p-6">
@@ -63,9 +78,23 @@ export function OpeningHandOverlay({
             </p>
           </div>
           <p className="text-sm text-base-content/60">
-            {mulligans === 0 ? "First mulligan is free." : `Next mulligan draws ${nextHandSize}.`}
+            {mulligans === 0
+              ? "First mulligan is free."
+              : londonMulligan
+                ? `Next mulligan draws ${handSize} and puts ${mulligans} on the bottom.`
+                : `Next mulligan draws ${nextHandSize}.`}
           </p>
         </div>
+
+        {choosingBottom ? (
+          <p className="mt-3 text-sm font-bold" aria-live="polite">
+            Choose {bottomCount} {bottomCount === 1 ? "card" : "cards"} to put on the bottom of your
+            library{" "}
+            <span className="font-mono text-base-content/60">
+              ({bottomCardIds.length}/{bottomCount})
+            </span>
+          </p>
+        ) : null}
 
         <ol className="mt-3 grid grid-cols-4 sm:mt-5 gap-2 sm:grid-cols-7 sm:gap-3">
           {hand.map((card, index) => (
@@ -77,7 +106,16 @@ export function OpeningHandOverlay({
               onMouseEnter={() => onCardHover(card.id, "hand")}
               onMouseLeave={() => onCardLeave(card.id)}
             >
-              <CardThumb card={card} />
+              {choosingBottom ? (
+                <BottomPickButton
+                  card={card}
+                  order={bottomCardIds.indexOf(card.id)}
+                  showOrder={bottomCount > 1}
+                  onToggle={() => onToggleBottomCard(card.id)}
+                />
+              ) : (
+                <CardThumb card={card} />
+              )}
             </li>
           ))}
         </ol>
@@ -98,8 +136,8 @@ export function OpeningHandOverlay({
             Mulligan
             <kbd className="kbd kbd-xs hidden sm:inline-flex">M</kbd>
           </Button>
-          <Button type="button" onClick={onKeep} autoFocus>
-            Keep {hand.length}
+          <Button type="button" onClick={onKeep} disabled={!readyToKeep} autoFocus>
+            Keep {hand.length - bottomCount}
             <kbd className="kbd kbd-xs hidden border-primary-content/30 bg-transparent text-primary-content sm:inline-flex">
               Enter
             </kbd>
@@ -107,6 +145,40 @@ export function OpeningHandOverlay({
         </div>
       </section>
     </div>
+  )
+}
+
+function BottomPickButton({
+  card,
+  onToggle,
+  order,
+  showOrder,
+}: {
+  card: PlaytestCard
+  onToggle: () => void
+  /** Position among the picked cards, or -1 when not picked. */
+  order: number
+  showOrder: boolean
+}) {
+  const picked = order !== -1
+  return (
+    <button
+      type="button"
+      className="relative block w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+      aria-pressed={picked}
+      aria-label={`Put ${card.name} on the bottom`}
+      onClick={onToggle}
+    >
+      <span className={cn("block transition-opacity", picked && "opacity-45")}>
+        <CardThumb card={card} />
+      </span>
+      {picked ? (
+        <span className="absolute inset-x-1.5 bottom-1.5 flex items-center justify-center gap-1 rounded bg-black/80 px-1.5 py-0.5 text-xs font-black text-white">
+          <ArrowDownToLine className="h-3.5 w-3.5" />
+          Bottom{showOrder ? ` ${order + 1}` : ""}
+        </span>
+      ) : null}
+    </button>
   )
 }
 
